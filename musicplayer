@@ -1,0 +1,183 @@
+<div class="music-player">
+    <audio id="audio" controls>
+        Your browser does not support the audio element.
+    </audio>
+    <div class="controls">
+        <button id="playPauseBtn">Play</button>
+        <button id="prevBtn">Previous</button>
+        <button id="nextBtn">Next</button>
+        <input type="range" id="seekBar" value="0">
+        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+    </div>
+    <div class="playlist">
+        <ul id="playlist">
+            <li data-src=”https://www.dropbox.com/scl/fi/81xrgogjg0azlbsm2rdmm/Angels-Online-BGM-Angels-Online-Theme.mp3?rlkey=bet5fsyu6ndqagi42w5cp9l8d&st=rx6bb429&dl=0">Song 1</li>
+            <li data-src="https://www.dropbox.com/scl/fi/zvbyj61ln9akozq12or0z/Angels-Online-BGM-Angel-Lyceum.mp3?rlkey=83db4ef3xuqaox88mchophdw6&st=ta59jztt&dl=0">Song 2</li>
+            <li data-src=”https://www.dropbox.com/scl/fi/yf9uzrwi8n0dbsktpyfm7/Angels-Online-BGM-Atlantis-Expansion-Theme-1.mp3?rlkey=qhso0r4u46thoixuqp789758l&st=9tdexqo3&dl=0">Song 3</li>
+            <li data-src=”https://www.dropbox.com/scl/fi/4m1pmzfc3awobc4mxzj1s/Wonderland-Online-Main-Menu.mp3?rlkey=rp8lin6aqwnha4ey4upn1rduj&st=reh3grlz&dl=0">Song 4</li>
+            <li data-src="https://www.dropbox.com/scl/fi/1bieedeyz5yzb0bj8xxwi/Wonderland-Online-ParadiseHot-Springs-OST.mp3?rlkey=6vc8m1kuohwkew7ha6ofev3s6&st=9gg8n6rt&dl=0">Song 5</li>
+        </ul>
+    </div>
+</div>
+
+
+
+
+
+.music-player {
+    width: 300px;
+    padding: 20px;
+    background-color: #FAF5F4;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+audio {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #DDC3AB;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #BFC7BD
+}
+
+input[type="range"] {
+    width: 60%;
+    margin: 0 10px;
+}
+
+span {
+    font-size: 14px;
+    color: #6AA0A9;
+}
+
+.playlist {
+    text-align: left;
+}
+
+.playlist ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.playlist li {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #BFC7BD;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.playlist li:hover {
+    background-color: #75A9C0;
+}
+
+
+const audio = document.getElementById('audio');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const seekBar = document.getElementById('seekBar');
+const currentTime = document.getElementById('currentTime');
+const duration = document.getElementById('duration');
+const playlist = document.getElementById('playlist');
+const playlistItems = playlist.getElementsByTagName('li');
+
+let currentSongIndex = 0;
+
+// Load the first song in the playlist
+loadSong(currentSongIndex);
+
+// Play/Pause functionality
+playPauseBtn.addEventListener('click', () => {
+    if (audio.paused) {
+        audio.play();
+        playPauseBtn.textContent = 'Pause';
+    } else {
+        audio.pause();
+        playPauseBtn.textContent = 'Play';
+    }
+});
+
+// Previous song functionality
+prevBtn.addEventListener('click', () => {
+    currentSongIndex = (currentSongIndex - 1 + playlistItems.length) % playlistItems.length;
+    loadSong(currentSongIndex);
+    audio.play();
+    playPauseBtn.textContent = 'Pause';
+});
+
+// Next song functionality
+nextBtn.addEventListener('click', () => {
+    currentSongIndex = (currentSongIndex + 1) % playlistItems.length;
+    loadSong(currentSongIndex);
+    audio.play();
+    playPauseBtn.textContent = 'Pause';
+});
+
+// Update seek bar and time display
+audio.addEventListener('timeupdate', () => {
+    seekBar.value = audio.currentTime;
+    currentTime.textContent = formatTime(audio.currentTime);
+});
+
+// Update duration display
+audio.addEventListener('loadedmetadata', () => {
+    seekBar.max = audio.duration;
+    duration.textContent = formatTime(audio.duration);
+});
+
+// Seek functionality
+seekBar.addEventListener('input', () => {
+    audio.currentTime = seekBar.value;
+});
+
+// Load a song from the playlist
+function loadSong(index) {
+    const songSrc = playlistItems[index].getAttribute('data-src');
+    audio.src = songSrc;
+    audio.load();
+    highlightSong(index);
+}
+
+// Highlight the current song in the playlist
+function highlightSong(index) {
+    for (let i = 0; i < playlistItems.length; i++) {
+        playlistItems[i].classList.remove('active');
+    }
+    playlistItems[index].classList.add('active');
+}
+
+// Format time (MM:SS)
+function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Play a song when clicked from the playlist
+for (let i = 0; i < playlistItems.length; i++) {
+    playlistItems[i].addEventListener('click', () => {
+        currentSongIndex = i;
+        loadSong(currentSongIndex);
+        audio.play();
+        playPauseBtn.textContent = 'Pause';
+    });
+}
